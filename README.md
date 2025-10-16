@@ -1,2 +1,2 @@
 # DotnetAzureReact
- Fullstack Development
+ SkillHub is a full-stack application built with React and .NET on Azure, designed for corporate training. The platform allows a business to purchase and customize its own learning portal, where administrators can upload and manage courses. Employees register for individual accounts to browse, enroll in, and complete training modules, streamlining the company's upskilling and certification process.
