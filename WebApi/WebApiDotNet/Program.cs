@@ -21,6 +21,12 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
 var app = builder.Build();
 app.UseCors();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+    db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
