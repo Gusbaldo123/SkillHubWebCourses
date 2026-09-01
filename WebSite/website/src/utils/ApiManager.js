@@ -1,7 +1,7 @@
 class ApiManager {
   //#region Handlers
   constructor() {
-    this.BASE_URL = 'http://localhost:5243/api';
+    this.BASE_URL = 'http://127.0.0.1:5000/api';
   }
   async fetchAPI(URL,body) {
     
