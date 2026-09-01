@@ -1,0 +1,14 @@
+.title{
+  width: 90%;
+  background-color: #02542D;
+  color: white;
+  margin: auto;
+  justify-content: center;
+}
+.title h1{
+  font-size: 3em;
+  font-weight: bold;
+  align-self: center;
+  text-align: center;
+  padding: 5% 5% 5% 5%;
+}
