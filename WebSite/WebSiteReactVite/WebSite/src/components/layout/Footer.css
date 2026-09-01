@@ -1,0 +1,85 @@
+
+@media(min-width:769px)
+{
+  .siteFooter{
+    margin: 5%;
+    background-color: #1E1E1E;
+    justify-content: space-between;
+  }
+  .siteFooter hr{
+    border: 0;
+    height: 1px;
+    background: #333;
+  }
+  
+  .footerInformations{
+    display: flex;
+  }
+  .footerInformations .footerSocialMedia{
+    margin: 2%;
+    width: 20%;
+  }
+  .footerInformations .footerSocialMedia .footerSocialMediaLogo{
+    width: 100%;
+  }
+  
+  .footerInformations .footerSocialMedia .footerSocialMediaLogo a{
+    display: inline-block;
+    border-radius: 50%;
+    padding: 0;
+    border: 2px solid transparent;
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+  }
+  .footerInformations .footerSocialMedia .footerSocialMediaLogo a:hover{
+    border: 2px solid white;
+  }
+  .footerInformations .footerSocialMedia .footerSocialMediaLogo  img{
+    padding: 0;
+    border: 0;
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+  }
+  
+  .footerInformations .footerSocialMedia .footerSocialMediaButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .footerInformations .footerSocialMedia .footerSocialMediaButtons button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background-color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .footerInformations .footerSocialMedia .footerSocialMediaButtons button:hover {
+    background-color: #333;
+    transform: scale(1.1);
+  }
+  
+  .footerInformations .footerSocialMedia .footerSocialMediaButtons svg {
+    width: 20px;
+    height: 20px;
+    fill: white;
+  }
+  .footerInformations .footerContact{
+    color: white;
+    width: 20%;
+  }
+  .footerInformations .footerContact h4{
+    height: 32px;
+    margin: 0;
+  }
+  .footerInformations .footerContact p{
+    margin-top: 25px;
+  }
+}
