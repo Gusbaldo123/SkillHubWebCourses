@@ -5,13 +5,13 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
-  
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver_db
     restart: unless-stopped
     environment:
-      ACCEPT_EULA: "Y"        
+      ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${DB_PASSWORD}
       MSSQL_PID: Developer
     ports:
@@ -40,6 +40,15 @@ services:
     depends_on:
       - sqlserver
       - redis
+
+  frontend:
+    build:
+      context: ../WebSite/WebSiteReactVite
+      dockerfile: Dockerfile
+    ports:
+      - "3000:5173"
+    depends_on:
+      - backend
 
 volumes:
   mssql_data:
