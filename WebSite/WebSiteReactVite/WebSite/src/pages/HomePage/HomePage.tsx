@@ -1,5 +1,5 @@
 //#region imports
-import { useEffect, useState, type SetStateAction } from "react";
+import { useEffect, useState,type Dispatch, type SetStateAction } from "react";
 import { useNavigate, type NavigateFunction } from "react-router";
 
 import "./HomePage.css";
@@ -17,12 +17,12 @@ export default HomePage;
 //#endregion
 
 //#region Handlers
-const NextCourse = (setCurrentIndex: any, courseList: any) => {
-  setCurrentIndex((prevIndex: any) => (prevIndex + 1) % courseList.length);
+const NextCourse = (setCurrentIndex: Dispatch<SetStateAction<number>>, courseList: Course[]) => {
+  setCurrentIndex((prevIndex: number) => (prevIndex + 1) % courseList.length);
 };
 
-const PreviousCourse = (setCurrentIndex: any, courseList: any) => {
-  setCurrentIndex((prevIndex: any) => (prevIndex - 1 + courseList.length) % courseList.length);
+const PreviousCourse = (setCurrentIndex: Dispatch<SetStateAction<number>>, courseList: Course[]) => {
+  setCurrentIndex((prevIndex: number) => (prevIndex - 1 + courseList.length) % courseList.length);
 };
 
 function FilterCarroussel(filter: string, courseList: Course[], setFilteredCourseList: (courses: Course[]) => SetStateAction<void>) {
@@ -32,7 +32,7 @@ function FilterCarroussel(filter: string, courseList: Course[], setFilteredCours
   }
 
   var newList = [...courseList];
-  newList = newList.filter((course: any) => ClearText(course.title).includes(ClearText(filter)));
+  newList = newList.filter((course: Course) => ClearText(course.title).includes(ClearText(filter)));
   setFilteredCourseList(newList);
 }
 
