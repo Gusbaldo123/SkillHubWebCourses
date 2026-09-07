@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-import type { User } from "../model/User";
-import authService, { type Credentials } from "../utils/AuthProvider";
+import type { User, Credentials } from "../model/User";
+import authService from "../utils/AuthProvider";
 
 interface AuthContextType
 {
     user: User | null;
     loading: boolean;
-    login: (email: string, password: string) => Promise<boolean>;
+    login: (credentials: Credentials) => Promise<boolean>;
     logout: () => void;
 }
 
@@ -32,9 +32,8 @@ export function AuthProvider({ children }: AuthProviderProps)
         setLoading(false);
     }, []);
 
-    async function login(email: string, password: string): Promise<boolean>
+    async function login(credentials: Credentials): Promise<boolean>
     {
-        const credentials: Credentials = { email, password };
         const user = await authService.authenticate(credentials);
 
         if (!user)

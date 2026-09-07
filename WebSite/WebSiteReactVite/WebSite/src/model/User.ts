@@ -3,7 +3,6 @@ import type { UserCourse } from "./UserCourse";
 export interface User {
     id: number;
     email: string;
-    password: string;
     isStudent: boolean;
     firstName: string;
     surname: string;
@@ -12,12 +11,25 @@ export interface User {
     courseList: UserCourse[];
 }
 
+export interface NewUser {
+    email: string;
+    password: string;
+    firstName: string;
+    surname: string;
+    phone: string;
+}
+
+export interface Credentials {
+    email: string;
+    password: string;
+}
+
 export function ToUser(data: any): User | null {
-    if (!data) return null;
+    if (!data || data.id == null) return null;
+
     const user: User = {
-        id: data.id ?? null,
+        id: Number(data.id),
         email: data.email ?? "",
-        password: data.password ?? "",
         isStudent: data.isStudent ?? false,
         firstName: data.firstName ?? "",
         surname: data.surname ?? "",
@@ -25,5 +37,6 @@ export function ToUser(data: any): User | null {
         isAuthenticated: data.isAuthenticated ?? false,
         courseList: data.courseList ?? []
     };
+
     return user;
 }

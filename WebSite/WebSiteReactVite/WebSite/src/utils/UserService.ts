@@ -2,7 +2,7 @@
 
 import HttpMethod from "../model/HTTPMethods.js";
 import RequestService from "./RequestService.js";
-import { ToUser, type User } from "../model/User.js";
+import { ToUser, type NewUser, type User } from "../model/User.js";
 
 //#endregion
 
@@ -34,7 +34,7 @@ class UserService {
         return ToUser(response.data);
     }
 
-    addUser = async (user: User): Promise<User | null> => {
+    addUser = async (user: NewUser): Promise<User | null> => {
         const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}`, HttpMethod.POST, user));
         if (!response)
             throw new Error("Failed to create user: No response received");
@@ -63,13 +63,14 @@ class UserService {
     }
 
     deleteById = async (userId: number): Promise<void> => {
-        const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}/${userId}`, HttpMethod.DELETE, null));
-        if (!response)
-            throw new Error("Failed to delete user: No response received");
+    const response = await RequestService.parseResponse<void>(await RequestService.fetchAPI(`${this.endpoint}/${userId}`, HttpMethod.DELETE, null));
 
-        if (!response.success)
-            throw new Error(`Failed to delete user: ${response.status}`);
-    }
+    if (!response)
+        throw new Error("Failed to delete user: No response received");
+
+    if (!response.success)
+        throw new Error(`Failed to delete user: ${response.status}`);
+}
     //#endregion
 
     //#endregion

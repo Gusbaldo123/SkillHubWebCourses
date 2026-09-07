@@ -11,3 +11,10 @@ export interface UserVideo {
     idVideo: number | null;
     isWatched: boolean;
 }
+
+export interface NewVideo{
+    id: number | null;
+    idCourse: number | null;
+    videoUrl: string;
+    videoTitle: string;
+}

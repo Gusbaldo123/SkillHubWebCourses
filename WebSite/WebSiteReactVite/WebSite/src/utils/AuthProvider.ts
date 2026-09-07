@@ -1,37 +1,37 @@
 //#region imports
 import RequestService from "./RequestService";
 import HttpMethod from "../model/HTTPMethods";
-import { ToUser, type User } from "../model/User.js";
+import { ToUser, type User, type Credentials } from "../model/User.js";
 //#endregion
-
-export interface Credentials {
-    email: string;
-    password: string;
-}
 
 class AuthService {
     localUser: User | null = null;
 
-    async authenticate(credentials: Credentials) {
+    async authenticate(credentials: Credentials): Promise<User | null> {
         if (!credentials) return null;
 
         const res: Response | null = await RequestService.fetchAPI("/auth", HttpMethod.POST, credentials);
 
-        if (!res) return;
+        if (!res)
+            throw new Error("No response received");
 
         if (!res.ok) {
-            const errorData = await res.json();
-            alert(errorData.message || "Authentication failed");
-            return;
+            let message = "Authentication failed";
+
+            try {
+                const errorData = await res.json();
+                message = errorData.message || message;
+            } catch {
+            }
+
+            throw new Error(message);
         }
 
         const userData = await res.json();
         const user: User | null = ToUser(userData);
 
-        if (!user) {
-            alert("Failed to convert user data");
-            return;
-        }
+        if (!user)
+            throw new Error("Failed to convert user data");
 
         this.localUser = user;
         localStorage.setItem("user", JSON.stringify(user));
@@ -43,14 +43,22 @@ class AuthService {
         if (this.localUser) return this.localUser;
 
         const userData = localStorage.getItem("user");
+
         if (!userData) return null;
 
-        const user: User | null = ToUser(JSON.parse(userData));
-        this.localUser = user;
-        return user;
+        try {
+            const user: User | null = ToUser(JSON.parse(userData));
+
+            this.localUser = user;
+
+            return user;
+        } catch {
+            localStorage.removeItem("user");
+            return null;
+        }
     }
 
-    logout() {
+    logout(): void {
         this.localUser = null;
         localStorage.removeItem("user");
     }
