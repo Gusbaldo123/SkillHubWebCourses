@@ -9,34 +9,12 @@ import type { Course } from "../model/Course.js";
 class CourseService {
     endpoint: string = "/course";
 
-    async getDataFromJSON<T>(response: Response | null) {
-        if (!response) return null;
-
-        const status = response.status;
-        let data: T | null = null;
-
-        if (response.status !== 204) {
-            try {
-                data = await response.json() as T;
-            }
-            catch {
-                data = null;
-            }
-        }
-
-        return {
-            status: status,
-            success: response.ok,
-            data: data
-        };
-    }
-
     //#region Handlers
 
     //#region Requests
 
     getLatest = async (amount: number = 10, page: number = 0): Promise<Course[]> => {
-        const response = await this.getDataFromJSON<Course[]>(await RequestService.fetchAPI(`${this.endpoint}/latest?amount=${amount}&page=${page}`, HttpMethod.GET, null));
+        const response = await RequestService.parseResponse<Course[]>(await RequestService.fetchAPI(`${this.endpoint}/latest?amount=${amount}&page=${page}`, HttpMethod.GET, null));
         if (!response)
             throw new Error("Failed to fetch course data: No response received");
 
@@ -47,7 +25,7 @@ class CourseService {
     }
 
     getByList = async (idList: number[]): Promise<Course[]> => {
-        const response = await this.getDataFromJSON<Course[]>(
+        const response = await RequestService.parseResponse<Course[]>(
             await RequestService.fetchAPI(`${this.endpoint}/idlist`, HttpMethod.POST, { idList })
         );
 
@@ -61,7 +39,7 @@ class CourseService {
     }
 
     getById = async (courseId: number): Promise<Course | null> => {
-        const response = await this.getDataFromJSON<Course>(await RequestService.fetchAPI(`${this.endpoint}/${courseId}`, HttpMethod.GET, null));
+        const response = await RequestService.parseResponse<Course>(await RequestService.fetchAPI(`${this.endpoint}/${courseId}`, HttpMethod.GET, null));
         if (!response)
             throw new Error("Failed to fetch course data: No response received");
 
@@ -72,7 +50,7 @@ class CourseService {
     }
 
     addCourse = async (course: Course): Promise<Course | null> => {
-        const response = await this.getDataFromJSON<Course>(await RequestService.fetchAPI(`${this.endpoint}`, HttpMethod.POST, course));
+        const response = await RequestService.parseResponse<Course>(await RequestService.fetchAPI(`${this.endpoint}`, HttpMethod.POST, course));
         if (!response)
             throw new Error("Failed to fetch course data: No response received");
 
@@ -83,7 +61,7 @@ class CourseService {
     }
 
     updateCourse = async (course: Course): Promise<Course | null> => {
-        const response = await this.getDataFromJSON<Course>(await RequestService.fetchAPI(`${this.endpoint}/${course.id}`, HttpMethod.PUT, course));
+        const response = await RequestService.parseResponse<Course>(await RequestService.fetchAPI(`${this.endpoint}/${course.id}`, HttpMethod.PUT, course));
         if (!response)
             throw new Error("Failed to fetch course data: No response received");
 
@@ -94,7 +72,7 @@ class CourseService {
     }
 
     deleteCourse = async (courseId: number): Promise<void> => {
-        const response = await this.getDataFromJSON<void>(await RequestService.fetchAPI(`${this.endpoint}/${courseId}`, HttpMethod.DELETE, null));
+        const response = await RequestService.parseResponse<void>(await RequestService.fetchAPI(`${this.endpoint}/${courseId}`, HttpMethod.DELETE, null));
         if (!response)
             throw new Error("Failed to fetch course data: No response received");
 

@@ -7,28 +7,6 @@ import type { CourseVideo } from "../model/Video";
 class VideoService {
     endpoint: string = "/video";
 
-    async getDataFromJSON<T>(response: Response | null) {
-        if (!response) return null;
-
-        const status = response.status;
-        let data: T | null = null;
-
-        if (response.status !== 204) {
-            try {
-                data = await response.json() as T;
-            }
-            catch {
-                data = null;
-            }
-        }
-
-        return {
-            status: status,
-            success: response.ok,
-            data: data
-        };
-    }
-
     toCourseVideo = (data: any): CourseVideo | null => {
         if (!data) return null;
         const video: CourseVideo = {
@@ -43,7 +21,7 @@ class VideoService {
     //#region Requests
 
     async getAllByCourseId(idCourse: number): Promise<CourseVideo[] | null> {
-        let response = await this.getDataFromJSON<CourseVideo[]>(await RequestService.fetchAPI(`${this.endpoint}/course/${idCourse}`, HttpMethod.GET, null));
+        let response = await RequestService.parseResponse<CourseVideo[]>(await RequestService.fetchAPI(`${this.endpoint}/course/${idCourse}`, HttpMethod.GET, null));
         if (!response) return null;
         if (!response.success) throw new Error(`Failed to get videos: ${response.status}`);
         if (!Array.isArray(response.data)) return null;
@@ -54,7 +32,7 @@ class VideoService {
     }
 
     async getById(id: number): Promise<CourseVideo | null> {
-        let response = await this.getDataFromJSON<CourseVideo>(await RequestService.fetchAPI(`${this.endpoint}/${id}`, HttpMethod.GET, null));
+        let response = await RequestService.parseResponse<CourseVideo>(await RequestService.fetchAPI(`${this.endpoint}/${id}`, HttpMethod.GET, null));
         if (!response) return null;
         if (!response.success) throw new Error(`Failed to get video: ${response.status}`);
         if(!response.data) return null;
@@ -62,7 +40,7 @@ class VideoService {
     }
 
     async addVideo(data: CourseVideo): Promise<CourseVideo | null> {
-        let response = await this.getDataFromJSON<CourseVideo>(await RequestService.fetchAPI(this.endpoint, HttpMethod.POST, data));
+        let response = await RequestService.parseResponse<CourseVideo>(await RequestService.fetchAPI(this.endpoint, HttpMethod.POST, data));
         if (!response) return null;
         if (!response.success) throw new Error(`Failed to add video: ${response.status}`);
         if (!response.data)
@@ -71,7 +49,7 @@ class VideoService {
     }
 
     async updateVideo(data: CourseVideo): Promise<CourseVideo | null> {
-        let response = await this.getDataFromJSON<CourseVideo>(await RequestService.fetchAPI(this.endpoint, HttpMethod.PUT, data));
+        let response = await RequestService.parseResponse<CourseVideo>(await RequestService.fetchAPI(this.endpoint, HttpMethod.PUT, data));
         if (!response) return null;
         if (!response.success) throw new Error(`Failed to update video: ${response.status}`);
         if (!response.data)
@@ -80,7 +58,7 @@ class VideoService {
     }
 
     async deleteById(id: number): Promise<void> {
-        let response = await this.getDataFromJSON(await RequestService.fetchAPI(`${this.endpoint}/${id}`, HttpMethod.DELETE, null));
+        let response = await RequestService.parseResponse(await RequestService.fetchAPI(`${this.endpoint}/${id}`, HttpMethod.DELETE, null));
         if (!response) return;
         if (response.success !== true) throw new Error(`Failed to delete video: ${response.status}`);
     }

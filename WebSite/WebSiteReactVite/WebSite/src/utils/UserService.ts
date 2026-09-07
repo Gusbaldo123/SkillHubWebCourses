@@ -9,32 +9,11 @@ import { ToUser, type User } from "../model/User.js";
 class UserService {
     endpoint: string = "/user";
 
-    async getDataFromJSON<T>(response: Response | null) {
-        if (!response) return null;
-
-        const status = response.status;
-        let data: T | null = null;
-
-        if (response.status !== 204) {
-            try {
-                data = await response.json() as T;
-            }
-            catch {
-                data = null;
-            }
-        }
-
-        return {
-            status: status,
-            success: response.ok,
-            data: data
-        };
-    }
     //#region Handlers
 
     //#region Requests
     getById = async (userId: number): Promise<User | null> => {
-        const response = await this.getDataFromJSON<User>(await RequestService.fetchAPI(`${this.endpoint}/${userId}`, HttpMethod.GET, null));
+        const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}/${userId}`, HttpMethod.GET, null));
         if (!response)
             throw new Error("Failed to fetch user data: No response received");
 
@@ -45,7 +24,7 @@ class UserService {
     }
 
     getByEmail = async (email: string): Promise<User | null> => {
-        const response = await this.getDataFromJSON<User>(await RequestService.fetchAPI(`${this.endpoint}/email/${email}`, HttpMethod.GET, null));
+        const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}/email/${email}`, HttpMethod.GET, null));
         if (!response)
             throw new Error("Failed to fetch user data: No response received");
 
@@ -56,7 +35,7 @@ class UserService {
     }
 
     addUser = async (user: User): Promise<User | null> => {
-        const response = await this.getDataFromJSON<User>(await RequestService.fetchAPI(`${this.endpoint}`, HttpMethod.POST, user));
+        const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}`, HttpMethod.POST, user));
         if (!response)
             throw new Error("Failed to create user: No response received");
 
@@ -70,7 +49,7 @@ class UserService {
     }
 
     updateUser = async (user: User): Promise<User | null> => {
-        const response = await this.getDataFromJSON<User>(await RequestService.fetchAPI(`${this.endpoint}/${user.id}`, HttpMethod.PUT, user));
+        const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}/${user.id}`, HttpMethod.PUT, user));
         if (!response)
             throw new Error("Failed to update user: No response received");
 
@@ -84,7 +63,7 @@ class UserService {
     }
 
     deleteById = async (userId: number): Promise<void> => {
-        const response = await this.getDataFromJSON<User>(await RequestService.fetchAPI(`${this.endpoint}/${userId}`, HttpMethod.DELETE, null));
+        const response = await RequestService.parseResponse<User>(await RequestService.fetchAPI(`${this.endpoint}/${userId}`, HttpMethod.DELETE, null));
         if (!response)
             throw new Error("Failed to delete user: No response received");
 
