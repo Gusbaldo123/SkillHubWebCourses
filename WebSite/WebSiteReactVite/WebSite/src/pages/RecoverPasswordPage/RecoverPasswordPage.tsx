@@ -54,7 +54,7 @@ function RecoverPasswordPage() {
     useEffect(() => {
         document.title = "Skillhub - Recover Password";
 
-        if (user) navigate("/Home");
+        if (user) navigate("/home");
     }, [navigate]);
 
     return (<>

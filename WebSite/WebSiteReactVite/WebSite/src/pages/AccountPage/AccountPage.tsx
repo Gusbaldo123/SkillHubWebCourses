@@ -71,7 +71,7 @@ async function UpdateAccount(e: React.FormEvent<HTMLFormElement>, userVal: User 
         return;
     }
 
-    navigate("/Home");
+    navigate("/home");
 }
 
 async function DeleteAccount(user: User, navigate: NavigateFunction): Promise<void> {
@@ -86,7 +86,7 @@ async function DeleteAccount(user: User, navigate: NavigateFunction): Promise<vo
         await UserService.deleteById(user.id);
 
         alert("Deleted Account");
-        navigate("/Home");
+        navigate("/home");
     }
     catch {
         alert("Found an error");
@@ -103,7 +103,7 @@ async function AddCourse(navigate: NavigateFunction): Promise<void> {
             videoList: []
         });
 
-        navigate("/Home");
+        navigate("/home");
     }
     catch {
         alert("Failed to create course.");

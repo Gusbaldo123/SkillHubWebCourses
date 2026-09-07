@@ -29,7 +29,7 @@ async function SubmitLoginForm(event: React.SubmitEvent<HTMLFormElement>, naviga
   });
 
   if (AuthProvider.getUser()) {
-    navigate("/Home");
+    navigate("/home");
   }
 }
 async function SubmitSignUpForm(event: React.SubmitEvent<HTMLFormElement>, setLoginPage: Dispatch<SetStateAction<boolean>>, isProcessing: boolean, setProcess: Dispatch<SetStateAction<boolean>>) {

@@ -34,7 +34,7 @@ function Footer() {
       <section className="footerInformations">
         <div className="footerSocialMedia">
           <div className="footerSocialMediaLogo">
-            <Link className="iconHeader" to={{ pathname: '/Home' }}>
+            <Link className="iconHeader" to={{ pathname: '/home' }}>
               <img src={IconSH} alt="socialMediaLogo" />
             </Link>
           </div>

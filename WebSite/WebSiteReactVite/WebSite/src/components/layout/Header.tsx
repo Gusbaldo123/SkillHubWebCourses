@@ -19,7 +19,7 @@ function Header() {
   function LogoffClickHandler() {
     logout();
     alert("Logged off successfully")
-    navigate("/Home");
+    navigate("/home");
   }
   //#endregion
 
@@ -45,7 +45,7 @@ function Header() {
     <header className="siteHeader">
       <nav className="navHeader">
         <div className="navHeaderIcon">
-          <Link className="iconHeader" to={{ pathname: '/Home' }}>
+          <Link className="iconHeader" to={{ pathname: '/home' }}>
             <img src={IconSH} alt="iconWebsite" />
           </Link>
         </div>
