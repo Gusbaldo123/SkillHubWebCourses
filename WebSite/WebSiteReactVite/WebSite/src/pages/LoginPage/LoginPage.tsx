@@ -1,5 +1,5 @@
 //#region imports
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useSearchParams, Link, useNavigate, type NavigateFunction } from "react-router";
 
 import "./LoginPage.css";
@@ -32,7 +32,7 @@ async function SubmitLoginForm(event: React.SubmitEvent<HTMLFormElement>, naviga
     navigate("/Home");
   }
 }
-async function SubmitSignUpForm(event: React.SubmitEvent<HTMLFormElement>, setLoginPage: React.Dispatch<React.SetStateAction<boolean>>, isProcessing: boolean, setProcess: React.Dispatch<React.SetStateAction<boolean>>) {
+async function SubmitSignUpForm(event: React.SubmitEvent<HTMLFormElement>, setLoginPage: Dispatch<SetStateAction<boolean>>, isProcessing: boolean, setProcess: Dispatch<SetStateAction<boolean>>) {
   event.preventDefault();
 
   if (isProcessing) return;
@@ -69,7 +69,7 @@ async function SubmitSignUpForm(event: React.SubmitEvent<HTMLFormElement>, setLo
 //#endregion
 
 //#region JSX
-function LogInForm({ navigate, setLoginPage }: { navigate: NavigateFunction, setLoginPage: React.Dispatch<React.SetStateAction<boolean>> }) {
+function LogInForm({ navigate, setLoginPage }: { navigate: NavigateFunction, setLoginPage: Dispatch<SetStateAction<boolean>> }) {
   return (
     <>
       <form className="formLogin" onSubmit={(e) => SubmitLoginForm(e, navigate)}>
@@ -89,7 +89,7 @@ function LogInForm({ navigate, setLoginPage }: { navigate: NavigateFunction, set
     </>
   );
 }
-function SignUpForm({ setLoginPage }: { setLoginPage: React.Dispatch<React.SetStateAction<boolean>> }) {
+function SignUpForm({ setLoginPage }: { setLoginPage: Dispatch<SetStateAction<boolean>> }) {
 
   const [isProcessing, setProcess] = useState(false);
   return (

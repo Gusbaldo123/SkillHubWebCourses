@@ -1,5 +1,6 @@
 //#region imports
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect,useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, Link } from "react-router";
 
 import RecoverPasswordService from "../../utils/RecoverAccountService";
@@ -18,7 +19,7 @@ export default RecoverPasswordPage;
 //#region Handlers
 const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-async function Recover(e: React.FormEvent<HTMLFormElement>, setResponse: (message: string) => void, isProcessing: boolean, setProcess: React.Dispatch<React.SetStateAction<boolean>>) {
+async function Recover(e: React.FormEvent<HTMLFormElement>, setResponse: (message: string) => void, isProcessing: boolean, setProcess: Dispatch<SetStateAction<boolean>>) {
     e.preventDefault();
     if (isProcessing) return;
     const emailInput = e.currentTarget.elements.namedItem('emailRecover') as HTMLInputElement | null;

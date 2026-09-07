@@ -1,18 +1,19 @@
 //#region imports
-import { Link,useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import "./Header.css";
 import "./HeaderMobile.css";
 
 import IconSH from "../../assets/IconSH.png";
 
 import { useAuth } from "../../router/AuthContext";
-const { user, logout } = useAuth();
-const navigate = useNavigate();
 
 export default Header;
 //#endregion
 
 function Header() {
+
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   //#region Handlers
   function LogoffClickHandler() {
@@ -21,7 +22,7 @@ function Header() {
     navigate("/Home");
   }
   //#endregion
-  
+
   //#region Components
   function RenderLoginButtons() {
     return user == null ? //if unlogged, return login/signup buttons
@@ -37,7 +38,7 @@ function Header() {
   }
   //#endregion
 
-  
+
 
   //#region JSX
   return (
@@ -48,7 +49,7 @@ function Header() {
             <img src={IconSH} alt="iconWebsite" />
           </Link>
         </div>
-        <RenderLoginButtons/>
+        <RenderLoginButtons />
       </nav>
     </header>
   );

@@ -1,5 +1,5 @@
 //#region Imports
-import React from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 
 import VideoService from "../../utils/VideoService";
 
@@ -16,7 +16,7 @@ export default CourseVideo;
 function CheckBoxChange(
     event: React.ChangeEvent<HTMLInputElement>,
     watchedVidList: UserCourse | null,
-    setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>,
+    setWatchedVidList: Dispatch<SetStateAction<UserCourse | null>>,
     index: number
 ): void {
     if (!watchedVidList) return;
@@ -39,7 +39,7 @@ function DeleteVideo(
     user: User | null,
     index: number,
     videoList: CourseVideoModel[],
-    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideoModel[]>>
+    updateVideoList: Dispatch<SetStateAction<CourseVideoModel[]>>
 ): void {
     if (!user || user.isStudent || id === null) return;
 
@@ -61,11 +61,11 @@ interface CourseVideoProps {
     index: number;
     user: User | null;
     watchedVidList: UserCourse | null;
-    setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>;
+    setWatchedVidList: Dispatch<SetStateAction<UserCourse | null>>;
     targetCourse: Course;
     video: CourseVideoModel;
     videoList: CourseVideoModel[];
-    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideoModel[]>>;
+    updateVideoList: Dispatch<SetStateAction<CourseVideoModel[]>>;
 }
 
 function CourseVideo({

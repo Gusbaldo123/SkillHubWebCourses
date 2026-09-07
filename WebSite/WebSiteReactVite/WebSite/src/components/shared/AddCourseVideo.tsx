@@ -1,7 +1,7 @@
 
 //#region imports
 
-import React, { useState } from "react";
+import React, { useState, type Dispatch, type SetStateAction } from "react";
 
 import CourseService from "../../utils/CourseService";
 import VideoService from "../../utils/VideoService";
@@ -27,17 +27,17 @@ interface AddCourseVideoProps {
     user: User | null;
     courseId: number;
     showAddVideo: boolean;
-    setShowAddVideo: React.Dispatch<React.SetStateAction<boolean>>;
+    setShowAddVideo: Dispatch<SetStateAction<boolean>>;
     videoList: CourseVideo[];
-    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>;
-    setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>;
+    updateVideoList: Dispatch<SetStateAction<CourseVideo[]>>;
+    setWatchedVidList: Dispatch<SetStateAction<UserCourse | null>>;
 }
 
 //#endregion
 
 //#region Handlers
 
-async function AddVideo(videoData: VideoValues, videoList: CourseVideo[], updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>): Promise<void> {
+async function AddVideo(videoData: VideoValues, videoList: CourseVideo[], updateVideoList: Dispatch<SetStateAction<CourseVideo[]>>): Promise<void> {
     await VideoService.addVideo(videoData);
 
     const newVideo: CourseVideo = {
@@ -50,14 +50,14 @@ async function AddVideo(videoData: VideoValues, videoList: CourseVideo[], update
     updateVideoList([...videoList, newVideo]);
 }
 
-function HandleChange(e: React.ChangeEvent<HTMLInputElement>, updateVideoValues: React.Dispatch<React.SetStateAction<VideoValues>>): void {
+function HandleChange(e: React.ChangeEvent<HTMLInputElement>, updateVideoValues: Dispatch<SetStateAction<VideoValues>>): void {
     updateVideoValues((previousValues) => ({
         ...previousValues,
         [e.target.name]: e.target.value
     }));
 }
 
-async function HandleAddClick(videoValues: VideoValues, showAddVideo: boolean, emptyVideoValues: VideoValues, videoList: CourseVideo[], updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>, setShowAddVideo: React.Dispatch<React.SetStateAction<boolean>>, updateVideoValues: React.Dispatch<React.SetStateAction<VideoValues>>, setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>): Promise<void> {
+async function HandleAddClick(videoValues: VideoValues, showAddVideo: boolean, emptyVideoValues: VideoValues, videoList: CourseVideo[], updateVideoList: Dispatch<SetStateAction<CourseVideo[]>>, setShowAddVideo: Dispatch<SetStateAction<boolean>>, updateVideoValues: Dispatch<SetStateAction<VideoValues>>, setWatchedVidList: Dispatch<SetStateAction<UserCourse | null>>): Promise<void> {
     if (videoValues.id == null || videoValues.id <= 0) return;
     if (videoValues.idCourse == null || videoValues.idCourse <= 0) return;
     if (videoValues.videoTitle.length < 1) return;
@@ -74,24 +74,25 @@ async function HandleAddClick(videoValues: VideoValues, showAddVideo: boolean, e
 
     updateVideoList(course.videoList);
 
-    setWatchedVidList((previousUserCourse) => {
-        if (!previousUserCourse) return previousUserCourse;
+    setWatchedVidList((previousUserCourse: UserCourse | null) => {
+    if (!previousUserCourse) return previousUserCourse;
 
-        return {
-            ...previousUserCourse,
-            videoList: course.videoList.map((video: CourseVideo) => {
-                const previousVideo = previousUserCourse.videoList.find(
-                    (userVideo) => userVideo.idList === video.id
-                );
+    return {
+        ...previousUserCourse,
+        videoList: course.videoList.map((video: CourseVideo) => {
+            const previousVideo = previousUserCourse.videoList.find(
+                (userVideo) => userVideo.idVideo === video.id
+            );
 
-                return previousVideo ?? {
-                    id: null,
-                    idList: video.id,
-                    isWatched: false
-                };
-            })
-        };
-    });
+            return previousVideo ?? {
+                id: null,
+                idUser: previousUserCourse.idUser,
+                idVideo: video.id,
+                isWatched: false
+            };
+        })
+    };
+});
 }
 
 //#endregion

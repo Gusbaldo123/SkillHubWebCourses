@@ -1,5 +1,5 @@
 //#region imports
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import "./CoursePage.css";
@@ -29,7 +29,7 @@ export default CoursePage;
 function ImageToBase64(
     e: React.ChangeEvent<HTMLInputElement>,
     course: Course,
-    updateImg64: React.Dispatch<React.SetStateAction<string>>
+    updateImg64: Dispatch<SetStateAction<string>>
 ): void {
     const file = e.target.files?.[0];
 
@@ -109,7 +109,7 @@ function HeaderStudent({ img64, targetCourse }: { img64: string; targetCourse: C
 
 interface HeaderAdminProps {
     img64: string;
-    updateImg64: React.Dispatch<React.SetStateAction<string>>;
+    updateImg64: Dispatch<SetStateAction<string>>;
     targetCourse: Course;
     courseId: number;
     navigate: ReturnType<typeof useNavigate>;

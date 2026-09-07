@@ -1,5 +1,5 @@
 //#region Imports
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate, type NavigateFunction } from "react-router";
 
 import "./AccountPage.css";
@@ -54,7 +54,7 @@ interface CourseListProps {
 interface DivFormProps {
     chosenField: AccountField;
     userVal: User;
-    setUserVal: React.Dispatch<React.SetStateAction<User | null>>
+    setUserVal: Dispatch<SetStateAction<User | null>>
 }
 //#endregion
 
@@ -110,7 +110,7 @@ async function AddCourse(navigate: NavigateFunction): Promise<void> {
     }
 }
 
-function HandleUpdateVal(e: React.ChangeEvent<HTMLInputElement>, userVal: User, property: EditableUserField, updateUserVal: React.Dispatch<React.SetStateAction<User | null>>): void {
+function HandleUpdateVal(e: React.ChangeEvent<HTMLInputElement>, userVal: User, property: EditableUserField, updateUserVal: Dispatch<SetStateAction<User | null>>): void {
     updateUserVal({
         ...userVal,
         [property]: e.target.value
@@ -229,7 +229,7 @@ function AccountPage() {
                 setLoading(true);
 
                 if (!user?.isStudent) {
-                    const result = await CourseService.getLatest(10,page);
+                    const result = await CourseService.getLatest(10, page);
                     setCourseList(result);
                     return;
                 }
