@@ -1,6 +1,6 @@
 //#region imports
 import React, { useEffect, useState } from "react";
-import { useSearchParams, Link, useNavigate } from "react-router";
+import { useSearchParams, Link, useNavigate, type NavigateFunction } from "react-router";
 
 import "./LoginPage.css";
 import "./LoginMobilePage.css";
@@ -9,52 +9,67 @@ import Header from "../../components/layout/Header.js";
 import Footer from "../../components/layout/Footer.js";
 import Banner from "../../components/shared/Banner.js";
 
-import UserManager from "../../utils/UserManager.js";
-import AuthManager from "../../utils/AuthManager.js";
+import UserService from "../../utils/UserService.js";
+import AuthProvider from "../../utils/AuthProvider.js";
+import { useAuth } from "../../router/AuthContext.js";
+import type { User } from "../../model/User.js";
 
 export default LoginPage;
 //#endregion
 
 //#region Handlers
-async function SubmitLoginForm(event:any, navigate:any) {
+async function SubmitLoginForm(event: React.SubmitEvent<HTMLFormElement>, navigate: NavigateFunction) {
   event.preventDefault();
 
-  const credentials = {
-    email: event.target.elements.lblEmail.value.toLowerCase(),
-    password: event.target.elements.lblPass.value
-  }
+  const formData = new FormData(event.currentTarget);
 
-  await AuthManager.authenticate(credentials);
-  if (UserManager.getLocalUser()) {
+  await AuthProvider.authenticate({
+    email: String(formData.get("lblEmail")).toLowerCase(),
+    password: String(formData.get("lblPass"))
+  });
+
+  if (AuthProvider.getUser()) {
     navigate("/Home");
   }
 }
-async function SubmitSignUpForm(event:any, setLoginPage:any, isProcessing:any, setProcess:any) {
+async function SubmitSignUpForm(event: React.SubmitEvent<HTMLFormElement>, setLoginPage: React.Dispatch<React.SetStateAction<boolean>>, isProcessing: boolean, setProcess: React.Dispatch<React.SetStateAction<boolean>>) {
   event.preventDefault();
 
   if (isProcessing) return;
 
   setProcess(true);
-  const el = event.target.elements;
-  const res = await UserManager.add({
-    email: el.lblEmail.value.toLowerCase(),
-    password: el.lblPass.value,
-    isStudent: true,
-    firstName: el.lblName.value,
-    surname: el.lblSurname.value,
-    phone: el.lblPhone.value,
-    courseList: []
-  });
 
-  if (window.confirm(res.data)) {
+  const formData = new FormData(event.currentTarget);
+
+  const userToAdd: User = {
+    id: 0,
+    email: String(formData.get("lblEmail")).toLowerCase(),
+    password: String(formData.get("lblPass")),
+    isStudent: true,
+    firstName: String(formData.get("lblName")),
+    surname: String(formData.get("lblSurname")),
+    phone: String(formData.get("lblPhone")),
+    courseList: []
+  };
+
+  const res: User | null = await UserService.addUser(userToAdd);
+
+  if (!res) {
+    alert("Error on signing in");
+    setProcess(false);
+    return;
+  }
+
+  if (window.confirm("User created with success!")) {
     setLoginPage(true);
   }
+
   setProcess(false);
 }
 //#endregion
 
 //#region JSX
-function LogInForm({ navigate, setLoginPage }:{ navigate:any, setLoginPage:any }) {
+function LogInForm({ navigate, setLoginPage }: { navigate: NavigateFunction, setLoginPage: React.Dispatch<React.SetStateAction<boolean>> }) {
   return (
     <>
       <form className="formLogin" onSubmit={(e) => SubmitLoginForm(e, navigate)}>
@@ -69,12 +84,12 @@ function LogInForm({ navigate, setLoginPage }:{ navigate:any, setLoginPage:any }
         </div>
         <button type="submit">LogIn</button>
         <Link className="btForgot" to={{ pathname: "/Recover" }}>Forgot your password?</Link>
-        <Link className="btSignUp" to={{ pathname: "" }} onClick={(e) => { e.preventDefault();setLoginPage(false); }}>Don't have an account?</Link>
+        <Link className="btSignUp" to={{ pathname: "" }} onClick={(e) => { e.preventDefault(); setLoginPage(false); }}>Don't have an account?</Link>
       </form>
     </>
   );
 }
-function SignUpForm({ setLoginPage }: { setLoginPage:any }) {
+function SignUpForm({ setLoginPage }: { setLoginPage: React.Dispatch<React.SetStateAction<boolean>> }) {
 
   const [isProcessing, setProcess] = useState(false);
   return (
@@ -105,7 +120,7 @@ function SignUpForm({ setLoginPage }: { setLoginPage:any }) {
         </div>
         <button type="submit">Register</button>
         <Link className="btForgot" to={{ pathname: "/Recover" }}>Forgot your password?</Link>
-        <Link className="btSignIn" to={{ pathname: "" }} onClick={(e) => { e.preventDefault();setLoginPage(true); }}>Already have an account?</Link>
+        <Link className="btSignIn" to={{ pathname: "" }} onClick={(e) => { e.preventDefault(); setLoginPage(true); }}>Already have an account?</Link>
       </form>
     </>
   );
@@ -113,9 +128,9 @@ function SignUpForm({ setLoginPage }: { setLoginPage:any }) {
 function LoginPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLoginPage, setLoginPage] = useState(searchParams.get("form") === "signIn");
 
-  const user = UserManager.getLocalUser();
   useEffect(() => {
     document.title = `Skillhub - ${isLoginPage ? "Login" : "Sign In"}`;
 

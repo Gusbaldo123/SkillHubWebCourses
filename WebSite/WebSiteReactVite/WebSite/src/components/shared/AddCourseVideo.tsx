@@ -3,8 +3,8 @@
 
 import React, { useState } from "react";
 
-import CourseManager from "../../utils/CourseManager";
-import VideoManager from "../../utils/VideoManager";
+import CourseService from "../../utils/CourseService";
+import VideoService from "../../utils/VideoService";
 
 import type { User } from "../../model/User";
 import type { CourseVideo } from "../../model/Video";
@@ -18,9 +18,9 @@ export default AddCourseVideo;
 
 interface VideoValues {
     id: number | null;
+    idCourse: number | null;
     videoTitle: string;
     videoUrl: string;
-    fkCourseId: number;
 }
 
 interface AddCourseVideoProps {
@@ -37,16 +37,12 @@ interface AddCourseVideoProps {
 
 //#region Handlers
 
-async function AddVideo(
-    videoData: VideoValues,
-    videoList: CourseVideo[],
-    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>
-): Promise<void> {
-    await VideoManager.add(videoData);
+async function AddVideo(videoData: VideoValues, videoList: CourseVideo[], updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>): Promise<void> {
+    await VideoService.addVideo(videoData);
 
     const newVideo: CourseVideo = {
         id: videoData.id,
-        fkCourseId: videoData.fkCourseId,
+        idCourse: videoData.idCourse,
         videoUrl: videoData.videoUrl,
         videoTitle: videoData.videoTitle
     };
@@ -54,27 +50,16 @@ async function AddVideo(
     updateVideoList([...videoList, newVideo]);
 }
 
-function HandleChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    updateVideoValues: React.Dispatch<React.SetStateAction<VideoValues>>
-): void {
+function HandleChange(e: React.ChangeEvent<HTMLInputElement>, updateVideoValues: React.Dispatch<React.SetStateAction<VideoValues>>): void {
     updateVideoValues((previousValues) => ({
         ...previousValues,
         [e.target.name]: e.target.value
     }));
 }
 
-async function HandleAddClick(
-    videoValues: VideoValues,
-    showAddVideo: boolean,
-    emptyVideoValues: VideoValues,
-    videoList: CourseVideo[],
-    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>,
-    setShowAddVideo: React.Dispatch<React.SetStateAction<boolean>>,
-    updateVideoValues: React.Dispatch<React.SetStateAction<VideoValues>>,
-    setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>
-): Promise<void> {
-    if (videoValues.fkCourseId <= 0) return;
+async function HandleAddClick(videoValues: VideoValues, showAddVideo: boolean, emptyVideoValues: VideoValues, videoList: CourseVideo[], updateVideoList: React.Dispatch<React.SetStateAction<CourseVideo[]>>, setShowAddVideo: React.Dispatch<React.SetStateAction<boolean>>, updateVideoValues: React.Dispatch<React.SetStateAction<VideoValues>>, setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>): Promise<void> {
+    if (videoValues.id == null || videoValues.id <= 0) return;
+    if (videoValues.idCourse == null || videoValues.idCourse <= 0) return;
     if (videoValues.videoTitle.length < 1) return;
     if (videoValues.videoUrl.length < 1) return;
 
@@ -83,11 +68,9 @@ async function HandleAddClick(
     setShowAddVideo(!showAddVideo);
     updateVideoValues({ ...emptyVideoValues });
 
-    const res = await CourseManager.get(videoValues.fkCourseId);
+    const course = await CourseService.getById(videoValues.idCourse);
 
-    if (!res?.data) return;
-
-    const course = res.data;
+    if (!course) return;
 
     updateVideoList(course.videoList);
 
@@ -98,12 +81,12 @@ async function HandleAddClick(
             ...previousUserCourse,
             videoList: course.videoList.map((video: CourseVideo) => {
                 const previousVideo = previousUserCourse.videoList.find(
-                    (userVideo) => userVideo.fkListId === video.id
+                    (userVideo) => userVideo.idList === video.id
                 );
 
                 return previousVideo ?? {
                     id: null,
-                    fkListId: video.id,
+                    idList: video.id,
                     isWatched: false
                 };
             })
@@ -115,25 +98,15 @@ async function HandleAddClick(
 
 //#region JSX
 
-function AddCourseVideo({
-    user,
-    courseId,
-    showAddVideo,
-    setShowAddVideo,
-    videoList,
-    updateVideoList,
-    setWatchedVidList
-}: AddCourseVideoProps) {
+function AddCourseVideo({ user, courseId, showAddVideo, setShowAddVideo, videoList, updateVideoList, setWatchedVidList }: AddCourseVideoProps) {
     const emptyVideoValues: VideoValues = {
         id: null,
         videoTitle: "",
         videoUrl: "",
-        fkCourseId: courseId
+        idCourse: courseId
     };
 
-    const [videoValues, updateVideoValues] = useState<VideoValues>({
-        ...emptyVideoValues
-    });
+    const [videoValues, updateVideoValues] = useState<VideoValues>({ ...emptyVideoValues });
 
     if (!user) return null;
     if (user.isStudent) return null;
@@ -152,7 +125,6 @@ function AddCourseVideo({
             <div className="courseVideo vid new" id="vidNew">
                 <div className="txtVideoName">
                     <label>Video Name: </label>
-
                     <input
                         type="text"
                         name="videoTitle"
@@ -173,26 +145,13 @@ function AddCourseVideo({
                 </div>
 
                 <div className="buttonOptions">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            void HandleAddClick(
-                                videoValues,
-                                showAddVideo,
-                                emptyVideoValues,
-                                videoList,
-                                updateVideoList,
-                                setShowAddVideo,
-                                updateVideoValues,
-                                setWatchedVidList
-                            );
-                        }}>
+                    <button type="button" onClick={() => {
+                        void HandleAddClick(videoValues, showAddVideo, emptyVideoValues, videoList, updateVideoList, setShowAddVideo, updateVideoValues, setWatchedVidList);
+                    }}>
                         Add
                     </button>
 
-                    <button
-                        type="button"
-                        onClick={() => { setShowAddVideo(!showAddVideo); }}>
+                    <button type="button" onClick={() => { setShowAddVideo(!showAddVideo); }}>
                         Cancel
                     </button>
                 </div>

@@ -11,10 +11,10 @@ import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import Banner from "../../components/shared/Banner";
 
-import UserManager from "../../utils/UserManager";
-import CourseManager from "../../utils/CourseManager";
-import AuthManager from "../../utils/AuthManager";
+import CourseService from "../../utils/CourseService";
+import UserService from "../../utils/UserService";
 
+import { useAuth } from "../../router/AuthContext";
 import type { User } from "../../model/User";
 import type { Course } from "../../model/Course";
 import type { UserCourse } from "../../model/UserCourse";
@@ -54,7 +54,7 @@ interface CourseListProps {
 interface DivFormProps {
     chosenField: AccountField;
     userVal: User;
-    updateUserVal: any;
+    setUserVal: React.Dispatch<React.SetStateAction<User | null>>
 }
 //#endregion
 
@@ -64,31 +64,14 @@ async function UpdateAccount(e: React.FormEvent<HTMLFormElement>, userVal: User 
 
     if (!userVal) return;
 
-    const newUser: User = {
-        id: userVal.id,
-        email: userVal.email,
-        password: userVal.password,
-        isStudent: userVal.isStudent,
-        firstName: userVal.firstName,
-        surname: userVal.surname,
-        phone: userVal.phone,
-        courseList: userVal.courseList
-    };
-
-    const result = await UserManager.update(newUser);
+    const result = await UserService.updateUser(userVal);
 
     if (!result) {
         alert("Found an error while updating the account.");
         return;
     }
 
-    await AuthManager.authenticate({
-        email: userVal.email,
-        password: userVal.password
-    });
-
-    if (UserManager.getLocalUser())
-        navigate("/Home");
+    navigate("/Home");
 }
 
 async function DeleteAccount(user: User, navigate: NavigateFunction): Promise<void> {
@@ -100,10 +83,9 @@ async function DeleteAccount(user: User, navigate: NavigateFunction): Promise<vo
     }
 
     try {
-        await UserManager.delete(user.id);
-        alert("Deleted Account");
+        await UserService.deleteById(user.id);
 
-        UserManager.setLocalUser(null);
+        alert("Deleted Account");
         navigate("/Home");
     }
     catch {
@@ -113,7 +95,8 @@ async function DeleteAccount(user: User, navigate: NavigateFunction): Promise<vo
 
 async function AddCourse(navigate: NavigateFunction): Promise<void> {
     try {
-        await CourseManager.add({
+        await CourseService.addCourse({
+            id: 0,
             title: "New Course",
             imageBase64: "placeholder_base64_data",
             description: "Insert Description Here",
@@ -127,7 +110,7 @@ async function AddCourse(navigate: NavigateFunction): Promise<void> {
     }
 }
 
-function HandleUpdateVal(e: React.ChangeEvent<HTMLInputElement>, userVal: User, property: EditableUserField, updateUserVal: React.Dispatch<React.SetStateAction<User>>): void {
+function HandleUpdateVal(e: React.ChangeEvent<HTMLInputElement>, userVal: User, property: EditableUserField, updateUserVal: React.Dispatch<React.SetStateAction<User | null>>): void {
     updateUserVal({
         ...userVal,
         [property]: e.target.value
@@ -141,7 +124,7 @@ function CourseImage({ targetCourse, user, navigate }: CourseImageProps) {
 
     if (user.isStudent) {
         const userTargetCourse = user.courseList.find(
-            (course: UserCourse) => course.fkCourseId === targetCourse.id
+            (course: UserCourse) => course.idCourse === targetCourse.id
         );
 
         if (userTargetCourse) {
@@ -195,14 +178,14 @@ function CourseList({ user, navigate, courseList }: CourseListProps) {
     );
 }
 
-function DivForm({ chosenField, userVal, updateUserVal }: DivFormProps) {
+function DivForm({ chosenField, userVal, setUserVal }: DivFormProps) {
     return (
         <div className={`div${chosenField.field}`} key={`div${chosenField.field}`}>
             <label htmlFor={`lbl${chosenField.field}`}>{chosenField.display}</label>
             <input type={chosenField.type} name={`lbl${chosenField.field}`}
                 id={`lbl${chosenField.field}`} className={`lbl${chosenField.field}`}
                 value={userVal[chosenField.property]} required
-                onChange={(e) => { HandleUpdateVal(e, userVal, chosenField.property, updateUserVal); }}
+                onChange={(e) => { HandleUpdateVal(e, userVal, chosenField.property, setUserVal); }}
                 disabled={chosenField.disabled} readOnly={chosenField.disabled}
                 autoComplete="new-password" />
         </div>
@@ -213,13 +196,12 @@ function DivForm({ chosenField, userVal, updateUserVal }: DivFormProps) {
 //#region Page
 function AccountPage() {
     const navigate = useNavigate();
-    const user = UserManager.getLocalUser();
+    const { user } = useAuth();
 
+    const [userVal, setUserVal] = useState<User | null>(null);
     const [courseList, setCourseList] = useState<Course[]>([]);
+    const [page, setPage] = useState(0);
     const [loading, setLoading] = useState<boolean>(true);
-    const [userVal, updateUserVal] = useState<User | null>(
-        user ? { ...user, password: "" } : null
-    );
 
     const fields: Record<string, AccountField> = {
         Email: { field: "Email", display: "Email", property: "email", type: "text", disabled: true },
@@ -228,6 +210,11 @@ function AccountPage() {
         Surname: { field: "Surname", display: "Surname", property: "surname", type: "text", disabled: false },
         Phone: { field: "Phone", display: "Phone", property: "phone", type: "text", disabled: false }
     };
+
+    useEffect(() => {
+        if (user)
+            setUserVal({ ...user });
+    }, [user]);
 
     useEffect(() => {
         document.title = "Skillhub - My Account";
@@ -242,16 +229,13 @@ function AccountPage() {
                 setLoading(true);
 
                 if (!user?.isStudent) {
-                    const result = await CourseManager.getAll();
-
-                    if (result?.data)
-                        setCourseList(result.data);
-
+                    const result = await CourseService.getLatest(10,page);
+                    setCourseList(result);
                     return;
                 }
 
                 const idList = user.courseList
-                    .map((userCourse) => userCourse.fkCourseId)
+                    .map((userCourse) => userCourse.idCourse)
                     .filter((id): id is number => id !== null && id !== undefined && id > 0);
 
                 if (idList.length === 0) {
@@ -259,12 +243,8 @@ function AccountPage() {
                     return;
                 }
 
-                const result = await CourseManager.getByList(idList);
-
-                if (result?.data)
-                    setCourseList(result.data);
-                else
-                    setCourseList([]);
+                const result = await CourseService.getByList(idList);
+                setCourseList(result);
             }
             catch (error) {
                 console.error("Failed to load courses:", error);
@@ -276,7 +256,7 @@ function AccountPage() {
         }
 
         void LoadCourses();
-    }, [navigate]);
+    }, [navigate, user]);
 
     if (!user || !userVal) return null;
 
@@ -303,15 +283,15 @@ function AccountPage() {
                     <h2>{user.isStudent ? `${user.firstName}'s Account` : `Mr./Ms ${user.surname}'s Account`}</h2>
                     <h3>Confirm your login</h3>
 
-                    <DivForm chosenField={fields.Email} userVal={userVal} updateUserVal={updateUserVal} />
-                    <DivForm chosenField={fields.Password} userVal={userVal} updateUserVal={updateUserVal} />
+                    <DivForm chosenField={fields.Email} userVal={userVal} setUserVal={setUserVal} />
+                    <DivForm chosenField={fields.Password} userVal={userVal} setUserVal={setUserVal} />
 
                     <hr />
                     <h3>Informations</h3>
 
-                    <DivForm chosenField={fields.FirstName} userVal={userVal} updateUserVal={updateUserVal} />
-                    <DivForm chosenField={fields.Surname} userVal={userVal} updateUserVal={updateUserVal} />
-                    <DivForm chosenField={fields.Phone} userVal={userVal} updateUserVal={updateUserVal} />
+                    <DivForm chosenField={fields.FirstName} userVal={userVal} setUserVal={setUserVal} />
+                    <DivForm chosenField={fields.Surname} userVal={userVal} setUserVal={setUserVal} />
+                    <DivForm chosenField={fields.Phone} userVal={userVal} setUserVal={setUserVal} />
 
                     <div className="btOptions">
                         <button type="submit" className="btUpdate">Update Account</button>

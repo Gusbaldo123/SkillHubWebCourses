@@ -1,79 +1,134 @@
 //#region Imports
 import React from "react";
 
-import UserManager from "../../utils/UserManager";
-import VideoManager from "../../utils/VideoManager";
+import VideoService from "../../utils/VideoService";
+
+import type { User } from "../../model/User";
+import type { Course } from "../../model/Course";
+import type { UserCourse } from "../../model/UserCourse";
+import type { CourseVideo as CourseVideoModel } from "../../model/Video";
 
 export default CourseVideo;
 //#endregion
 
 //#region Handlers
-function CheckBoxChange(event, user, watchedVidList, setWatchedVidList, targetCourse, i, setUser) {
-    if (!user) return;
-    const newList = { ...watchedVidList };
-    newList.videoList[i] = event.target.checked;
+
+function CheckBoxChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+    watchedVidList: UserCourse | null,
+    setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>,
+    index: number
+): void {
+    if (!watchedVidList) return;
+
+    const newList: UserCourse = {
+        ...watchedVidList,
+        videoList: [...watchedVidList.videoList]
+    };
+
+    newList.videoList[index] = {
+        ...newList.videoList[index],
+        isWatched: event.target.checked
+    };
+
     setWatchedVidList(newList);
-    SetUserWatchedVidList(newList, user, targetCourse, setUser);
 }
 
-function SetUserWatchedVidList(watchedVidList, user, targetCourse, setUser) {
-    const updatedUser = { ...user };
-    if (updatedUser.courseList) {
-        const courseIndex = updatedUser.courseList.findIndex(course => course.fkCourseId === targetCourse.id);
-        
-        if (courseIndex >= 0) {
-            updatedUser.courseList[courseIndex].videoList = watchedVidList.videoList;
-        } else {
-            updatedUser.courseList.push({
-                fkCourseId: targetCourse.id,
-                videoList: watchedVidList.videoList,
-            });
-        }
-    }
+function DeleteVideo(
+    id: number | null,
+    user: User | null,
+    index: number,
+    videoList: CourseVideoModel[],
+    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideoModel[]>>
+): void {
+    if (!user || user.isStudent || id === null) return;
 
-    setUser(updatedUser);
-    UserManager.setLocalUser(updatedUser);
-}
-
-function DeleteVideo(id, user, index, videoList, updateVideoList) {
-    if (user.isStudent) return;
     if (window.confirm("Delete this video?")) {
-        VideoManager.delete(id);
+        void VideoService.deleteById(id);
+
         const newVideoList = [...videoList];
         newVideoList.splice(index, 1);
+
         updateVideoList(newVideoList);
     }
 }
+
 //#endregion
 
 //#region JSX
-function CourseVideo({ index, user, watchedVidList, setWatchedVidList, targetCourse, setUser, video, videoList, updateVideoList }) {
-    const isStudent = user && user.isStudent;
-    const isWatched = isStudent ? watchedVidList.videoList[index] : false;
-    
+
+interface CourseVideoProps {
+    index: number;
+    user: User | null;
+    watchedVidList: UserCourse | null;
+    setWatchedVidList: React.Dispatch<React.SetStateAction<UserCourse | null>>;
+    targetCourse: Course;
+    video: CourseVideoModel;
+    videoList: CourseVideoModel[];
+    updateVideoList: React.Dispatch<React.SetStateAction<CourseVideoModel[]>>;
+}
+
+function CourseVideo({
+    index,
+    user,
+    watchedVidList,
+    setWatchedVidList,
+    targetCourse,
+    video,
+    videoList,
+    updateVideoList
+}: CourseVideoProps) {
+    const isStudent = user?.isStudent ?? false;
+    const isWatched = isStudent && watchedVidList
+        ? watchedVidList.videoList[index]?.isWatched ?? false
+        : false;
+
     return (
-        <div key={index.toString()} className={`videoGroup group${index}`} id={`group${index}`}>
+        <div className={`videoGroup group${index}`} id={`group${index}`}>
             <input
                 disabled={!isStudent}
                 className={`videoCheckbox ch${index}`}
                 id={`ch${index}`}
                 type="checkbox"
                 checked={isWatched}
-                onChange={(e) => CheckBoxChange(e, user, watchedVidList, setWatchedVidList, targetCourse, index, setUser)} />
+                onChange={(e) => CheckBoxChange(e, watchedVidList, setWatchedVidList, index)}
+            />
+
             <div
                 className={`courseVideo vid${index}`}
                 id={`vid${index}`}
                 onClick={() => {
                     window.open(video.videoUrl);
-                    const checkboxEvent = { target: { checked: true } };
-                    CheckBoxChange(checkboxEvent, user, watchedVidList, setWatchedVidList, targetCourse, index, setUser);
-                }} >
+
+                    if (!watchedVidList || !isStudent) return;
+
+                    const newList: UserCourse = {
+                        ...watchedVidList,
+                        videoList: [...watchedVidList.videoList]
+                    };
+
+                    newList.videoList[index] = {
+                        ...newList.videoList[index],
+                        isWatched: true
+                    };
+
+                    setWatchedVidList(newList);
+                }}
+            >
                 <p className={`lblVideo txtVid${index}`} id={`txtVid${index}`}>
                     <b>{`Video ${index + 1} - ${video.videoTitle}`}</b>
                 </p>
             </div>
-            {user && !isStudent ? <button className="btDelete" onClick={() => DeleteVideo(video.id, user, index, videoList, updateVideoList)}>Del</button> : null}
+
+            {user && !isStudent
+                ? <button
+                    className="btDelete"
+                    onClick={() => DeleteVideo(video.id, user, index, videoList, updateVideoList)}>
+                    Del
+                </button>
+                : null}
         </div>
-    )
+    );
 }
+
 //#endregion

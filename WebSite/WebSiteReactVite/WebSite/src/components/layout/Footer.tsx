@@ -28,9 +28,6 @@ function MediaButton({ url, svgPath }: { url: string, svgPath: React.ReactNode }
 
 function Footer() {
   //#region JSX
-
-
-
   return (
     <footer className="siteFooter">
       <hr />
