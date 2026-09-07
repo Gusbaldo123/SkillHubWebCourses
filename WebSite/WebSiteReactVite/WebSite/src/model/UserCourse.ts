@@ -1,22 +1,24 @@
 import type { UserVideo } from "./Video";
 
-export interface UserCourse {
+export interface UserCourse
+{
     id: number | null;
-    fkUserId: number | null;
-    fkCourseId: number | null;
+    idUser: number | null;
+    idCourse: number | null;
     videoList: UserVideo[];
 }
 
-export function ToUserCourse(dto: any): UserCourse {
+export function ToUserCourse(dto: any): UserCourse
+{
     return {
         id: dto.id,
-        fkUserId: dto.fkUserId,
-        fkCourseId: dto.fkCourseId,
-        videoList: dto.videoList.map((video: any) => ({
+        idUser: dto.idUser,
+        idCourse: dto.idCourse,
+        videoList: dto.videoList.map((video: UserVideo) => ({
             id: video.id,
-            fkUserId: video.fkUserId,
-            fkVideoId: video.fkVideoId,
-            watched: video.watched
+            idUser: video.idUser,
+            idVideo: video.idVideo,
+            isWatched: video.isWatched
         }))
     };
 }

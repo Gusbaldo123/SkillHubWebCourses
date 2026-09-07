@@ -7,6 +7,7 @@ export interface CourseVideo {
 
 export interface UserVideo {
     id: number | null;
-    idList: number | null;
+    idUser: number | null;
+    idVideo: number | null;
     isWatched: boolean;
 }
