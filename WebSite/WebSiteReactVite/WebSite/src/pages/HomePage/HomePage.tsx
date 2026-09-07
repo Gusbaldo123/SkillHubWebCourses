@@ -1,6 +1,6 @@
 //#region imports
-import React, { useEffect, useState, type SetStateAction } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState,type Dispatch, type SetStateAction } from "react";
+import { useNavigate, type NavigateFunction } from "react-router";
 
 import "./HomePage.css";
 import "./HomeMobilePage.css";
@@ -9,42 +9,41 @@ import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import Banner from "../../components/shared/Banner";
 
-import CourseManager from "../../utils/CourseManager";
+import CourseService from "../../utils/CourseService";
+import type { Course } from "../../model/Course";
 
 export default HomePage;
 
 //#endregion
 
 //#region Handlers
-const NextCourse = (setCurrentIndex:any, courseList:any) => {
-  setCurrentIndex((prevIndex:any) => (prevIndex + 1) % courseList.length);
+const NextCourse = (setCurrentIndex: Dispatch<SetStateAction<number>>, courseList: Course[]) => {
+  setCurrentIndex((prevIndex: number) => (prevIndex + 1) % courseList.length);
 };
 
-const PreviousCourse = (setCurrentIndex:any, courseList:any) => {
-  setCurrentIndex((prevIndex:any) => (prevIndex - 1 + courseList.length) % courseList.length);
+const PreviousCourse = (setCurrentIndex: Dispatch<SetStateAction<number>>, courseList: Course[]) => {
+  setCurrentIndex((prevIndex: number) => (prevIndex - 1 + courseList.length) % courseList.length);
 };
 
-function FilterCarroussel(filter:string, courseList:number[], setFilteredCourseList:(courses:number[]) => SetStateAction<number[]>)
-{
-  if(!filter || filter === "")
-  {
+function FilterCarroussel(filter: string, courseList: Course[], setFilteredCourseList: (courses: Course[]) => SetStateAction<void>) {
+  if (!filter || filter === "") {
     setFilteredCourseList(courseList);
     return;
   }
 
   var newList = [...courseList];
-  newList = newList.filter((course:any)=>ClearText(course.title).includes(ClearText(filter)));
+  newList = newList.filter((course: Course) => ClearText(course.title).includes(ClearText(filter)));
   setFilteredCourseList(newList);
 }
 
-const ClearText = (text:string) => {
-  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(/ç/g, "c").replaceAll(/Ç/g, "C").replaceAll("%20"," ").toLowerCase();
+const ClearText = (text: string) => {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(/ç/g, "c").replaceAll(/Ç/g, "C").replaceAll("%20", " ").toLowerCase();
 };
 //#endregion
 
 //#region JSX
 
-function CarrousselCourses({ courseList, navigate }:{ courseList:any[]|null, navigate:any }) {
+function CarrousselCourses({ courseList,navigate }: { courseList: Course[],navigate:NavigateFunction }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(3);
 
@@ -73,8 +72,8 @@ function CarrousselCourses({ courseList, navigate }:{ courseList:any[]|null, nav
     courseList[(currentIndex + i) % courseList.length]
   );
 
-  function Wrapper({ visibleItems, navigate }: { visibleItems: any[], navigate: any }) {
-    if (visibleItems.includes(undefined))
+  function Wrapper({ visibleItems,navigate }: { visibleItems: Course[], navigate:NavigateFunction }) {
+    if (visibleItems.length <= 0)
       return (
         <div className="carouselWrapper">
           <h2 className="emptyCourses">There are no courses yet</h2>
@@ -112,7 +111,7 @@ function CarrousselCourses({ courseList, navigate }:{ courseList:any[]|null, nav
           <path d="M8 4l8 8-8 8" />
         </svg>
       </button>
-      <Wrapper visibleItems={visibleItems} navigate={navigate} />
+      <Wrapper visibleItems={visibleItems} navigate={navigate}/>
       <button
         onClick={() => NextCourse(setCurrentIndex, courseList)}
         className="contentCourseNext btCourses"
@@ -126,20 +125,19 @@ function CarrousselCourses({ courseList, navigate }:{ courseList:any[]|null, nav
 }
 
 function HomePage() {
-
-  const [courseList, setCourseList] = useState(null);
-  const [filteredCourseList, setFilteredCourseList] = useState(null);
+  const [courseList, setCourseList] = useState<Course[]>();
+  const [filteredCourseList, setFilteredCourseList] = useState<Course[]>();
   const [filter, setFilter] = useState("");
   const navigate = useNavigate();
+
 
   useEffect(() => {
     document.title = "Skillhub";
 
     const loadCourses = async () => {
-      const res = await CourseManager.getAll();
-      if (!res) return;
-      setCourseList(res.data);
-      setFilteredCourseList(res.data);
+      let res = await CourseService.getLatest();
+      setCourseList(res);
+      setFilteredCourseList(res);
     };
 
     loadCourses();
@@ -147,7 +145,7 @@ function HomePage() {
 
   if (!courseList)
     return <div className="homepage-loading">Loading...</div>;
-  
+
   return (
     <>
       <Header />
@@ -155,10 +153,10 @@ function HomePage() {
         <Banner />
         <section className="content">
           <div className="contentCourseSearch">
-            <input type="text" id="contentCourseText" className="contentCourseText" placeholder="What do you want to learn?" onChange={(e)=>setFilter(e.target.value)}/>
-            <button onClick={()=>{FilterCarroussel(filter,courseList,setFilteredCourseList)}}>Search</button>
+            <input type="text" id="contentCourseText" className="contentCourseText" placeholder="What do you want to learn?" onChange={(e) => setFilter(e.target.value)} />
+            <button onClick={() => { FilterCarroussel(filter, courseList, setFilteredCourseList) }}>Search</button>
           </div>
-          <CarrousselCourses courseList={filteredCourseList} navigate={navigate} />
+          <CarrousselCourses courseList={filteredCourseList || []} navigate={navigate} />
         </section>
       </main>
       <Footer />

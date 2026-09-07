@@ -82,4 +82,8 @@
   .footerInformations .footerContact p{
     margin-top: 25px;
   }
+  .footerInformations .footerContact a:link, .footerInformations .footerContact a:visited{
+    color: white;
+    width: 20%;
+  }
 }
