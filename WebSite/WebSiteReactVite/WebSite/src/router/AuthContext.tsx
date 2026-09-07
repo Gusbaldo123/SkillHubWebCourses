@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import type { User } from "../model/User";
-import { decode } from "../utils/SessionDecoder";
+import authService, { type Credentials } from "../utils/AuthProvider";
 
 interface AuthContextType
 {
@@ -21,76 +21,39 @@ interface AuthProviderProps
 
 export function AuthProvider({ children }: AuthProviderProps)
 {
-    const [user, setUser] = useState<User | null>(null);
+    const [localUser, setLocalUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() =>
     {
-        const token = localStorage.getItem("session_token");
+        const user = authService.getUser();
 
-        if (token)
-        {
-            const payload = decode(token);
-
-            if (payload)
-            {
-                setUser(payload.user);
-            }
-        }
-
+        setLocalUser(user);
         setLoading(false);
     }, []);
 
     async function login(email: string, password: string): Promise<boolean>
     {
-        try
-        {
-            const apiUrl = import.meta.env.VITE_API || "/api";
-            const url = `${apiUrl}/user`;
+        const credentials: Credentials = { email, password };
+        const user = await authService.authenticate(credentials);
 
-            console.log(url);
-
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (!response.ok)
-                return false;
-
-            const token = await response.text();
-
-            localStorage.setItem("session_token", token);
-
-            const payload = decode(token);
-
-            console.log(payload);
-
-            if (!payload)
-                return false;
-
-            setUser(payload.user);
-
-            return true;
-        }
-        catch
-        {
+        if (!user)
             return false;
-        }
+
+        setLocalUser(user);
+
+        return true;
     }
 
     function logout(): void
     {
-        localStorage.removeItem("session_token");
-        setUser(null);
+        authService.logout();
+        setLocalUser(null);
         window.location.href = "/login";
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user: localUser, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

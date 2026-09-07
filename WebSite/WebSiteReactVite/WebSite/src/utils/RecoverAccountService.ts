@@ -1,7 +1,7 @@
 import RequestService from "./RequestService";
 import HttpMethod from "../model/HTTPMethods";
 
-class RecoverPasswordManager {
+class RecoverPasswordService {
     async sendMail(mail: string): Promise<string | null> {
         if (!mail) return null;
         if (typeof (mail) !== "string") return null;
@@ -23,5 +23,5 @@ class RecoverPasswordManager {
     }
 }
 
-const recoverPasswordManager = new RecoverPasswordManager();
-export default recoverPasswordManager;
+const recoverPasswordService = new RecoverPasswordService();
+export default recoverPasswordService;

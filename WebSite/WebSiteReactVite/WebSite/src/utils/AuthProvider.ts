@@ -9,7 +9,7 @@ export interface Credentials {
     password: string;
 }
 
-class AuthenticationService {
+class AuthService {
     localUser: User | null = null;
 
     async authenticate(credentials: Credentials) {
@@ -38,9 +38,25 @@ class AuthenticationService {
 
         return user;
     }
+
+    getUser(): User | null {
+        if (this.localUser) return this.localUser;
+
+        const userData = localStorage.getItem("user");
+        if (!userData) return null;
+
+        const user: User | null = ToUser(JSON.parse(userData));
+        this.localUser = user;
+        return user;
+    }
+
+    logout() {
+        this.localUser = null;
+        localStorage.removeItem("user");
+    }
 }
 
 //#region exports
-const authService = new AuthenticationService();
+const authService = new AuthService();
 export default authService;
 //#endregion

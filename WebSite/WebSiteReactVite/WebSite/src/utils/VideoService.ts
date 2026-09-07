@@ -4,7 +4,7 @@ import HttpMethod from "../model/HTTPMethods";
 import type { CourseVideo } from "../model/Video";
 //#endregion
 
-class VideoManager {
+class VideoService {
     endpoint: string = "/video";
 
     async getDataFromJSON<T>(response: Response | null) {
@@ -88,6 +88,6 @@ class VideoManager {
 }
 
 //#region exports
-const videoManager = new VideoManager();
-export default videoManager;
+const videoService = new VideoService();
+export default videoService;
 //#endregion

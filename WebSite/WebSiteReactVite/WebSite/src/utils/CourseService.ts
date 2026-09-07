@@ -6,9 +6,8 @@ import type { Course } from "../model/Course.js";
 
 //#endregion
 
-class CourseService
-{
-    endpoint: string = "/user";
+class CourseService {
+    endpoint: string = "/course";
 
     async getDataFromJSON<T>(response: Response | null) {
         if (!response) return null;
@@ -35,6 +34,32 @@ class CourseService
     //#region Handlers
 
     //#region Requests
+
+    getLatest = async (amount: number = 10, page: number = 0): Promise<Course[]> => {
+        const response = await this.getDataFromJSON<Course[]>(await RequestService.fetchAPI(`${this.endpoint}/latest?amount=${amount}&page=${page}`, HttpMethod.GET, null));
+        if (!response)
+            throw new Error("Failed to fetch course data: No response received");
+
+        if (!response.success)
+            throw new Error(`Failed to get latest courses: ${response.status}`);
+
+        return response.data ?? [];
+    }
+
+    getByList = async (idList: number[]): Promise<Course[]> => {
+        const response = await this.getDataFromJSON<Course[]>(
+            await RequestService.fetchAPI(`${this.endpoint}/idlist`, HttpMethod.POST, { idList })
+        );
+
+        if (!response)
+            throw new Error("Failed to fetch course data: No response received");
+
+        if (!response.success)
+            throw new Error(`Failed to get courses by ID list: ${response.status}`);
+
+        return response.data ?? [];
+    }
+
     getById = async (courseId: number): Promise<Course | null> => {
         const response = await this.getDataFromJSON<Course>(await RequestService.fetchAPI(`${this.endpoint}/${courseId}`, HttpMethod.GET, null));
         if (!response)
